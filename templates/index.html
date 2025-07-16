@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Haloo Chat</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    .chatbox { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; height: 70vh; overflow-y: auto; }
+    .msg { margin: 10px 0; }
+    .user { color: blue; }
+    .bot { color: green; }
+    #controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+    input[type="text"] { flex: 1; padding: 10px; font-size: 16px; width: 60%; }
+    button { padding: 10px 15px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="chatbox" id="chatBox"></div>
+  <div id="controls">
+    <input id="userInput" type="text" placeholder="Say something..." />
+    <button id="sendBtn">Send</button>
+    <button id="voiceBtn">🎤</button>
+  </div>
+  <script src="/static/script.js"></script>
+</body>
+</html>
