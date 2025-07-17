@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
+  let isVoiceInput = false; // Track if voice was used
+
   function appendMessage(role, text) {
     const msg = document.createElement("div");
     msg.className = `msg ${role}`;
@@ -17,8 +19,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function speak(text) {
-    const utter = new SpeechSynthesisUtterance(text);
-    synth.speak(utter);
+    const utterance = new SpeechSynthesisUtterance(text);
+    synth.speak(utterance);
   }
 
   async function sendMessage(message) {
@@ -32,26 +34,29 @@ document.addEventListener("DOMContentLoaded", function () {
     chatBox.appendChild(loading);
     chatBox.scrollTop = chatBox.scrollHeight;
 
-   try {
-  const res = await fetch("/send", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ message })
-  });
+    try {
+      const res = await fetch("/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message })
+      });
 
-  const data = await res.json();
-  console.log("📥 Bot replied:", data);  // ✅ DEBUG LINE
+      const data = await res.json();
+      loading.remove();
 
-  loading.remove();
-  appendMessage("bot", data.response || "⚠️ No response from bot.");
-  speak(data.response || "");
-} catch (err) {
-  loading.remove();
-  appendMessage("bot", "❌ Failed to connect.");
-  console.error(err);
-  
+      const reply = data.response || "⚠️ No response from bot.";
+      appendMessage("bot", reply);
+
+      if (isVoiceInput) {
+        speak(reply);
+        isVoiceInput = false; // Reset after speaking
+      }
+    } catch (err) {
+      loading.remove();
+      appendMessage("bot", "❌ Failed to connect.");
+      console.error(err);
     } finally {
       sendBtn.disabled = false;
     }
@@ -59,7 +64,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   sendBtn.addEventListener("click", () => {
     const message = userInput.value.trim();
-    if (message) sendMessage(message);
+    if (message) {
+      sendMessage(message);
+    }
   });
 
   userInput.addEventListener("keydown", e => {
@@ -75,12 +82,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
       recognition.start();
       voiceBtn.disabled = true;
-      voiceBtn.textContent = "🎤 Listening...";
+      voiceBtn.textContent = "🎙️ Listening...";
 
       recognition.onresult = event => {
         const transcript = event.results[0][0].transcript;
         userInput.value = transcript;
-        sendBtn.click();
+        isVoiceInput = true; // ✅ Ensure bot replies with TTS
+        sendMessage(transcript); // Directly send the voice message
       };
 
       recognition.onerror = err => {
@@ -90,8 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       recognition.onend = () => {
         voiceBtn.disabled = false;
-        voiceBtn.textContent = "🎤";
+        voiceBtn.textContent = "🎙️";
       };
     });
   }
 });
+

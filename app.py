@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
-OLLAMA_MODEL = "mistral"
+OLLAMA_MODEL = "Qwen"
 
 @app.route("/")
 def index():
@@ -46,3 +46,4 @@ def send():
 if __name__ == "__main__":
     print("🚀 Starting Flask server with Ollama integration...")
     app.run(debug=True)
+    

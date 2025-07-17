@@ -1,25 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Haloo Chat</title>
+  <meta charset="UTF-8">
+  <title>👁️‍🗨️Haloo Bot</title>  <!-- Title in browser tab -->
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
-    .chatbox { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; height: 70vh; overflow-y: auto; }
-    .msg { margin: 10px 0; }
-    .user { color: blue; }
-    .bot { color: green; }
-    #controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
-    input[type="text"] { flex: 1; padding: 10px; font-size: 16px; width: 60%; }
-    button { padding: 10px 15px; font-size: 16px; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #dbeafe, #f4f4f4);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 20px auto 0;
+      color: #1e40af;
+      font-size: 32px;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      max-width: 700px;
+      margin: auto;
+      flex: 1;
+    }
+
+    .chatbox {
+      flex: 1;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow-y: auto;
+      margin-top: 10px;
+      height: 70vh;
+    }
+
+    .msg {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 8px;
+      max-width: 75%;
+      line-height: 1.4;
+    }
+
+    .user {
+      background-color: #dbeafe;
+      align-self: flex-end;
+      color: #1e40af;
+      text-align: right;
+      margin-left: auto;
+    }
+
+    .bot {
+      background-color: #f3f4f6;
+      color: #111827;
+      text-align: left;
+      margin-right: auto;
+    }
+
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px auto;
+      width: 100%;
+      max-width: 700px;
+      padding: 0 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      background-color: #2563eb;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
   </style>
 </head>
 <body>
-  <div class="chatbox" id="chatBox"></div>
-  <div id="controls">
-    <input id="userInput" type="text" placeholder="Say something..." />
-    <button id="sendBtn">Send</button>
-    <button id="voiceBtn">🎤</button>
+  <h1>👁️‍🗨️Haloo Bot</h1> <!-- Visible on the top of the page -->
+
+  <div class="chat-container">
+    <div class="chatbox" id="chatBox"></div>
+    <div id="controls">
+      <input id="userInput" type="text" placeholder="Ask anything..." />
+      <button id="sendBtn">Send</button>
+      <button id="voiceBtn">🎙️</button>
+    </div>
   </div>
+
   <script src="/static/script.js"></script>
 </body>
 </html>
