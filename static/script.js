@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
   let isVoiceInput = false;
-  let isListening = false;
+  let isRecording = false;  // <-- For toggle state
 
   function appendMessage(role, text) {
     const msg = document.createElement("div");
@@ -72,44 +72,41 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.key === "Enter") sendBtn.click();
   });
 
-  if (voiceBtn && recognition) {
-    recognition.continuous = false; // Stop after one input
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
+  if (voiceBtn) {
     voiceBtn.addEventListener("click", () => {
-      if (!isListening) {
+      if (!recognition) {
+        alert("Your browser doesn't support speech recognition.");
+        return;
+      }
+
+      if (!isRecording) {
         recognition.start();
-        isListening = true;
-        voiceBtn.textContent = "listening...";
-        voiceBtn.style.backgroundColor = "#292df7ff"; // Optional red bg while listening
+        isRecording = true;
+        voiceBtn.textContent = "listening"; // Change to stop icon
       } else {
         recognition.stop();
-        isListening = false;
-        voiceBtn.textContent = "🎙️";
-        voiceBtn.style.backgroundColor = ""; // Reset bg color
+        isRecording = false;
+        voiceBtn.textContent = "🎙️"; // Reset icon
       }
+
+      recognition.onresult = event => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+        isVoiceInput = true;
+        sendMessage(transcript);
+      };
+
+      recognition.onerror = err => {
+        console.error(err);
+        appendMessage("bot", "❌ Voice error.");
+        isRecording = false;
+        voiceBtn.textContent = "🎙️";
+      };
+
+      recognition.onend = () => {
+        isRecording = false;
+        voiceBtn.textContent = "🎙️";
+      };
     });
-
-    recognition.onresult = event => {
-      const transcript = event.results[0][0].transcript;
-      userInput.value = transcript;
-      isVoiceInput = true;
-      sendMessage(transcript);
-    };
-
-    recognition.onerror = err => {
-      console.error(err);
-      appendMessage("bot", "❌ Voice error.");
-      isListening = false;
-      voiceBtn.textContent = "🎙️";
-      voiceBtn.style.backgroundColor = "";
-    };
-
-    recognition.onend = () => {
-      isListening = false;
-      voiceBtn.textContent = "🎙️";
-      voiceBtn.style.backgroundColor = "";
-    };
   }
 });
