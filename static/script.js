@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-  let isVoiceInput = false; // Track if voice was used
+  let isVoiceInput = false;
+  let isListening = false;
 
   function appendMessage(role, text) {
     const msg = document.createElement("div");
@@ -37,9 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const res = await fetch("/send", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message })
       });
 
@@ -51,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (isVoiceInput) {
         speak(reply);
-        isVoiceInput = false; // Reset after speaking
+        isVoiceInput = false;
       }
     } catch (err) {
       loading.remove();
@@ -73,34 +72,44 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.key === "Enter") sendBtn.click();
   });
 
-  if (voiceBtn) {
+  if (voiceBtn && recognition) {
+    recognition.continuous = false; // Stop after one input
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
     voiceBtn.addEventListener("click", () => {
-      if (!recognition) {
-        alert("Your browser doesn't support speech recognition.");
-        return;
-      }
-
-      recognition.start();
-      voiceBtn.disabled = true;
-      voiceBtn.textContent = "🎙️ Listening...";
-
-      recognition.onresult = event => {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        isVoiceInput = true; // ✅ Ensure bot replies with TTS
-        sendMessage(transcript); // Directly send the voice message
-      };
-
-      recognition.onerror = err => {
-        console.error(err);
-        appendMessage("bot", "❌ Voice error.");
-      };
-
-      recognition.onend = () => {
-        voiceBtn.disabled = false;
+      if (!isListening) {
+        recognition.start();
+        isListening = true;
+        voiceBtn.textContent = "listening...";
+        voiceBtn.style.backgroundColor = "#292df7ff"; // Optional red bg while listening
+      } else {
+        recognition.stop();
+        isListening = false;
         voiceBtn.textContent = "🎙️";
-      };
+        voiceBtn.style.backgroundColor = ""; // Reset bg color
+      }
     });
+
+    recognition.onresult = event => {
+      const transcript = event.results[0][0].transcript;
+      userInput.value = transcript;
+      isVoiceInput = true;
+      sendMessage(transcript);
+    };
+
+    recognition.onerror = err => {
+      console.error(err);
+      appendMessage("bot", "❌ Voice error.");
+      isListening = false;
+      voiceBtn.textContent = "🎙️";
+      voiceBtn.style.backgroundColor = "";
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      voiceBtn.textContent = "🎙️";
+      voiceBtn.style.backgroundColor = "";
+    };
   }
 });
-
