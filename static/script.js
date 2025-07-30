@@ -1,20 +1,22 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const sendBtn = document.getElementById("sendBtn");
   const voiceBtn = document.getElementById("voiceBtn");
-  const userInput = document.getElementById("userInput");
+  const inputBox = document.getElementById("inputBox");
   const chatBox = document.getElementById("chatBox");
+  const locationDisplay = document.getElementById("locationDisplay");
+
+  let currentLat = null;
+  let currentLon = null;
 
   const synth = window.speechSynthesis;
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  const recognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    ? new (window.SpeechRecognition || window.webkitSpeechRecognition)()
+    : null;
 
-  let isVoiceInput = false;
-  let isRecording = false;  // <-- For toggle state
-
-  function appendMessage(role, text) {
+  function appendMsg(role, text) {
     const msg = document.createElement("div");
-    msg.className = `msg ${role}`;
-    msg.innerHTML = `<strong>${role === "user" ? "You" : "Bot"}:</strong> ${text}`;
+    msg.className = "msg " + role;
+    msg.innerHTML = `<strong>${role === "user" ? "You" : "Bot"}:</strong> ${text.replace(/\n/g, "<br>")}`;
     chatBox.appendChild(msg);
     chatBox.scrollTop = chatBox.scrollHeight;
   }
@@ -24,89 +26,102 @@ document.addEventListener("DOMContentLoaded", function () {
     synth.speak(utterance);
   }
 
-  async function sendMessage(message) {
-    appendMessage("user", message);
-    userInput.value = "";
-    sendBtn.disabled = true;
+  async function getLocationNow() {
+    return new Promise((resolve, reject) => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            currentLat = position.coords.latitude;
+            currentLon = position.coords.longitude;
+            locationDisplay.textContent = `📍 Latitude: ${currentLat.toFixed(5)}, Longitude: ${currentLon.toFixed(5)}`;
+            console.log("✅ Current Location:", currentLat, currentLon);
+            resolve();
+          },
+          (error) => {
+            locationDisplay.textContent = "⚠️ Location access denied or unavailable.";
+            console.warn("⚠️ Geolocation error:", error);
+            reject(error);
+          }
+        );
+      } else {
+        locationDisplay.textContent = "❌ Geolocation not supported by this browser.";
+        reject("Geolocation not supported");
+      }
+    });
+  }
 
-    const loading = document.createElement("div");
-    loading.className = "msg bot";
-    loading.textContent = "Bot: ⏳ Typing...";
-    chatBox.appendChild(loading);
-    chatBox.scrollTop = chatBox.scrollHeight;
+  async function sendMessage(message) {
+    appendMsg("user", message);
+    inputBox.value = "";
+
+    const payload = { message };
+
+    // ⬇️ Include location only for navigation queries
+    const msgLower = message.toLowerCase();
+    if (
+      msgLower.includes("direction") ||
+      msgLower.includes("navigate") ||
+      msgLower.includes("route") ||
+      msgLower.includes("how to go") ||
+      msgLower.includes("way to") ||
+      msgLower.includes("go to") ||
+      msgLower.includes("how do i get to")
+    ) {
+      try {
+        if (!currentLat || !currentLon) await getLocationNow();
+        payload.lat = currentLat;
+        payload.lon = currentLon;
+      } catch {
+        appendMsg("bot", "⚠️ Unable to access your location. Please allow GPS access.");
+        return;
+      }
+    }
+
+    const typingMsg = document.createElement("div");
+    typingMsg.className = "msg bot";
+    typingMsg.innerHTML = `<strong>Bot:</strong> typing...`;
+    chatBox.appendChild(typingMsg);
 
     try {
       const res = await fetch("/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
+        body: JSON.stringify(payload)
       });
-
       const data = await res.json();
-      loading.remove();
-
-      const reply = data.response || "⚠️ No response from bot.";
-      appendMessage("bot", reply);
-
-      if (isVoiceInput) {
-        speak(reply);
-        isVoiceInput = false;
+      typingMsg.innerHTML = `<strong>Bot:</strong> ${data.response.replace(/\n/g, "<br>")}`;
+      if (data.is_direction || msgLower.includes("navigate") || msgLower.includes("direction")) {
+        speak(data.response);
       }
     } catch (err) {
-      loading.remove();
-      appendMessage("bot", "❌ Failed to connect.");
-      console.error(err);
-    } finally {
-      sendBtn.disabled = false;
+      typingMsg.innerHTML = `<strong>Bot:</strong> ⚠️ Error getting response.`;
+      console.error("Server error:", err);
     }
   }
 
-  sendBtn.addEventListener("click", () => {
-    const message = userInput.value.trim();
-    if (message) {
-      sendMessage(message);
-    }
-  });
+  sendBtn.onclick = () => {
+    const text = inputBox.value.trim();
+    if (text) sendMessage(text);
+  };
 
-  userInput.addEventListener("keydown", e => {
+  inputBox.addEventListener("keydown", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
 
-  if (voiceBtn) {
-    voiceBtn.addEventListener("click", () => {
-      if (!recognition) {
-        alert("Your browser doesn't support speech recognition.");
-        return;
-      }
-
-      if (!isRecording) {
-        recognition.start();
-        isRecording = true;
-        voiceBtn.textContent = "listening"; // Change to stop icon
-      } else {
-        recognition.stop();
-        isRecording = false;
-        voiceBtn.textContent = "🎙️"; // Reset icon
-      }
-
-      recognition.onresult = event => {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        isVoiceInput = true;
-        sendMessage(transcript);
-      };
-
-      recognition.onerror = err => {
-        console.error(err);
-        appendMessage("bot", "❌ Voice error.");
-        isRecording = false;
-        voiceBtn.textContent = "🎙️";
-      };
-
-      recognition.onend = () => {
-        isRecording = false;
-        voiceBtn.textContent = "🎙️";
-      };
-    });
+  if (recognition) {
+    voiceBtn.onclick = () => recognition.start();
+    recognition.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      inputBox.value = text;
+      sendMessage(text);
+    };
+  } else {
+    voiceBtn.disabled = true;
   }
+
+  // 📍 Get current location on load
+  getLocationNow();
+
+  // 🔁 Auto-update location every 30 seconds
+  setInterval(getLocationNow, 30000);
 });

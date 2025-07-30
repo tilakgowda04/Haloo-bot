@@ -2,114 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>👁️‍🗨️Haloo Bot</title>  <!-- Title in browser tab -->
+  <title>Haloo Bot</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #dbeafe, #f4f4f4);
+      background: linear-gradient(to right, #d0e6ff, #f0f4ff);
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
     }
 
-    h1 {
+    header {
+      background-color: #3399ff;
+      color: white;
+      padding: 20px;
       text-align: center;
-      margin: 20px auto 0;
-      color: #1e40af;
-      font-size: 32px;
-    }
-
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      max-width: 700px;
-      margin: auto;
-      flex: 1;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .chatbox {
-      flex: 1;
+      max-width: 700px;
+      margin: 20px auto;
       padding: 20px;
       background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-height: 70vh;
       overflow-y: auto;
-      margin-top: 10px;
-      height: 70vh;
     }
 
     .msg {
-      margin: 10px 0;
-      padding: 10px 15px;
-      border-radius: 8px;
-      max-width: 75%;
-      line-height: 1.4;
+      margin: 12px 0;
+      padding: 12px 16px;
+      border-radius: 16px;
+      max-width: 80%;
+      word-wrap: break-word;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
     .user {
-      background-color: #dbeafe;
-      align-self: flex-end;
-      color: #1e40af;
+      background: #cce5ff;
       text-align: right;
       margin-left: auto;
+      color: #003366;
     }
 
     .bot {
-      background-color: #f3f4f6;
-      color: #111827;
+      background: #e9f2ff;
       text-align: left;
       margin-right: auto;
+      color: #003355;
     }
 
-    #controls {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 20px auto;
-      width: 100%;
-      max-width: 700px;
-      padding: 0 20px;
+    #inputSection {
+      text-align: center;
+      padding: 20px;
+      background: #dceeff;
+      border-top: 2px solid #c2e0ff;
+      position: sticky;
+      bottom: 0;
     }
 
-    input[type="text"] {
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+    #inputBox {
+      width: 60%;
+      padding: 10px 14px;
       font-size: 16px;
+      border: 2px solid #c2e0ff;
+      border-radius: 20px;
       outline: none;
     }
 
-    button {
-      padding: 12px 18px;
-      font-size: 16px;
-      border: none;
-      background-color: #2563eb;
+    #sendBtn, #voiceBtn {
+      background-color: #3399ff;
       color: white;
-      border-radius: 8px;
+      border: none;
+      border-radius: 50%;
+      font-size: 18px;
+      width: 44px;
+      height: 44px;
+      margin-left: 10px;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #1d4ed8;
+    #sendBtn:hover, #voiceBtn:hover {
+      background-color: #1a75d2;
+    }
+
+    #locationDisplay {
+      font-size: 14px;
+      text-align: center;
+      padding: 10px;
+      color: #003366;
     }
   </style>
 </head>
 <body>
-  <h1>👁️‍🗨️Haloo Bot</h1> <!-- Visible on the top of the page -->
+  <header>👁️‍🗨️ Haloo Bot</header>
 
-  <div class="chat-container">
-    <div class="chatbox" id="chatBox"></div>
-    <div id="controls">
-      <input id="userInput" type="text" placeholder="Ask anything..." />
-      <button id="sendBtn">Send</button>
-      <button id="voiceBtn">🎙️</button>
-    </div>
+  <div class="chatbox" id="chatBox"></div>
+
+  <div id="locationDisplay">📍 Detecting location...</div>
+
+  <div id="inputSection">
+    <input id="inputBox" type="text" placeholder="Ask anything...">
+    <button id="sendBtn">➤</button>
+    <button id="voiceBtn">🎙️</button>
   </div>
 
   <script src="/static/script.js"></script>
 </body>
 </html>
-
